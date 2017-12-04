@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>マーチン計算機</title>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+    <script src="https://unpkg.com/vue"></script>
+  </head>
+  <body>
+    <div class="row">
+      <nav>
+        <div class="nav-wrapper blue darken-3">
+            <a href="#" class="brand-logo center">マーチン計算機</a>
+        </div>
+      </nav>
+    </div>
+
+    <div id="app">
+      
+      <div class="row">
+        <div class="input-field col s12">
+          <input type="text" class="validate" v-model="profit">
+          <label for="password">利益</label>
+        </div>
+        <div class="input-field col s12">
+          <input type="text" class="validate" v-model="payout_rate">
+          <label for="password">ペイアウト率</label>
+        </div>
+        <div class="input-field col s12">
+          <table class="bordered">
+              <tbody>
+                <tr v-for="(item, index) in entry">
+                  <td>{{ index + 1 }}回目</td>
+                  <td>{{ item }}円</td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+      </div>
+      
+    </div>
+
+  <!--Import jQuery before materialize.js-->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+  </body>
+
+  <script>
+
+  function floor_arr(arr) {
+    var return_arr = [];
+    arr.forEach(function(elm) {
+      //小数点以下を切り捨てて配列に格納
+      return_arr.push(Math.floor(elm));
+    });
+    return return_arr;
+  }
+
+  var app = new Vue({
+    el: '#app',
+    data: {
+      raw_entry:   [],
+      entry:       [],
+      martin_max:  5,
+      profit:      1000,
+      payout_rate: 1.9,
+      message:     'Hello Vue!',
+      entry:       []
+    },
+    watch: {
+      profit: function(){
+        this.calc();
+      },
+      payout_rate: function(){
+        this.calc();
+      }
+    },
+    methods: {
+      calc: function() {
+        //エントリー配列を初期化
+        this.raw_entry = [];
+        this.entry = [];
+        if( (this.payout_rate == "" || parseFloat(this.payout_rate) <= 1) || (this.profit == "" || parseInt(this.profit) <= 0) ){
+          return false;
+        }
+        //1回目のエントリー = profit
+        this.raw_entry.push(parseInt(this.profit));
+        //最大マーチン回数 - 1 繰り返す(マーチン2回目以降)
+        for(i = 1; i < this.martin_max; i++){
+          var sum_money = this.sum(this.raw_entry);
+          var plus_profit = parseInt(this.profit);
+          var minus_payout_rate = this.payout_rate - 1;
+          var entry_money = (sum_money + plus_profit) / minus_payout_rate;
+          console.log(entry_money);
+          this.raw_entry.push(entry_money);
+        }
+        //生の計算数値を実際のエントリー金額(整数)に変換
+        this.entry = floor_arr(this.raw_entry);
+      },
+      sum: function() {
+        var sum = 0;
+        for (i = 0; i < this.raw_entry.length; i++){
+          sum = sum + this.raw_entry[i];
+        }
+        return sum;
+      }
+    },
+    created: function() {
+      this.calc();
+    }
+  });
+
+  </script>
+</html>
